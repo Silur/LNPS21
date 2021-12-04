@@ -43,7 +43,7 @@ struct CommitmentParams {
 }
 
 impl CommitmentParams {
-    pub fn new<R: Rng>(rng: &mut R) -> Self {
+    pub fn new<R: Rng>(ds: DecryptionSecretKey, rng: &mut R) -> Self {
     let mut a0 = [[0u64; (KAPPA+LAMBDA+ALPHA+5)]; KAPPA];
     let mut a1 = [[0u64; (KAPPA+LAMBDA+ALPHA+5)]; KAPPA];
     let mut a2 = [0u64; (KAPPA+LAMBDA+ALPHA+5)];
@@ -62,8 +62,17 @@ impl CommitmentParams {
             a2[i] = range.sample(rng);
             a3[i] = range.sample(rng);
             a4[i] = range.sample(rng);
+            t1[i] = 0;
+            t2[i] = 0;
+            for j in 0..KAPPA {
+                t1[i] += a0[i][j]*ds.h1[j];
+                t2[i] += a0[i][j]*ds.h2[j];
+            }
+            for j in 0..KAPPA {
+                t1[i] += ds.e1[j];
+                t2[i] += ds.e2[j];
+            }
         }
-        // TODO calc t1, t2
         Self { a0, a1, a2, a3, a4, t1, t2 }
     }
 }
